@@ -1,0 +1,17 @@
+[package]
+name = "kernel"
+version = "0.1.0"
+authors = ["Ayan Choudhary <darkrider251099@gmail.com>"]
+edition = "2018"
+
+# prevent stack unwinding on panic in dev
+[profile.dev]
+panic = "abort"
+
+# prevent stack unwinding on panic in prod
+[profile.release]
+panic = "abort"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
