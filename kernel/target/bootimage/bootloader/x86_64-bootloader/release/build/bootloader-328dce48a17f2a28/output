@@ -1,7 +1,0 @@
-cargo:rerun-if-changed=/home/d3m0n/projects/rusticos/kernel/Cargo.toml
-cargo:rustc-link-search=native=/home/d3m0n/projects/rusticos/kernel/target/bootimage/bootloader/x86_64-bootloader/release/build/bootloader-328dce48a17f2a28/out
-cargo:rustc-link-lib=static=kernel_bin-kernel
-cargo:rerun-if-env-changed=KERNEL
-cargo:rerun-if-env-changed=KERNEL_MANIFEST
-cargo:rerun-if-changed=/home/d3m0n/projects/rusticos/kernel/target/x86_64/debug/kernel
-cargo:rerun-if-changed=build.rs
