@@ -10,4 +10,4 @@ Cargo.lock
 **/*.rs.bk
 
 # Remove generated binaries
-/kernel/target/
+/kernel/target/**
