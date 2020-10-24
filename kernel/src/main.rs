@@ -1,16 +1,34 @@
 #![no_std]
 #![no_main]
+#![feature(custom_test_frameworks)]
+#![test_runner(kernel::test_runner)]
+#![reexport_test_harness_main = "test_main"]
 
-use core::panic::PanicInfo
+use core::panic::PanicInfo;
+use kernel::println;
+
+// panic handler
+#[cfg(not(test))]
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
+    println!("{}", _info);
+    loop {}
+}
+
+// panic handler for tests
+#[cfg(test)]
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
+    kernel::test_panic_handler(_info)
+}
 
 // entry point for kernel
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    loop {}
-}
+    println!("Hello World{}", "!");
 
-// panic handler
-#[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+    #[cfg(test)]
+    test_main();
+
     loop {}
 }
