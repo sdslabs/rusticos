@@ -27,9 +27,6 @@ fn panic(_info: &PanicInfo) -> ! {
 pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
 
-    kernel::init();
-    x86_64::instructions::interrupts::int3();
-
     #[cfg(test)]
     test_main();
 
