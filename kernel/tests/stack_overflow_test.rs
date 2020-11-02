@@ -8,7 +8,7 @@ use kernel::serial_print;
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     serial_print!("stack_overflow::stack_overflow...\t");
-    
+
     kernel::gdt::init();
     init_test_idt();
 
@@ -38,11 +38,12 @@ lazy_static! {
     };
 }
 
-use kernel::{exit_qemu, QemuExitCode, serial_println};
+use kernel::{exit_qemu, serial_println, QemuExitCode};
 use x86_64::structures::idt::InterruptStackFrame;
 
 extern "x86-interrupt" fn test_double_fault_handler(
-    _stack_frame: &mut InterruptStackFrame, _error_code: u64,
+    _stack_frame: &mut InterruptStackFrame,
+    _error_code: u64,
 ) -> ! {
     serial_println!("[ok]");
     exit_qemu(QemuExitCode::Success);

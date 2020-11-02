@@ -12,7 +12,7 @@ use kernel::println;
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     println!("{}", _info);
-    loop {}
+    kernel::hlt_loop();
 }
 
 // panic handler for tests
@@ -31,5 +31,5 @@ pub extern "C" fn _start() -> ! {
     test_main();
 
     println!("It did not crash!");
-    loop {}
+    kernel::hlt_loop();
 }

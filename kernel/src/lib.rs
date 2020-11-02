@@ -6,14 +6,14 @@
 #![feature(abi_x86_interrupt)]
 
 use core::panic::PanicInfo;
-#[path = "vga/vga_buffer.rs"]
-pub mod vga_buffer;
-#[path = "serial/serial.rs"]
-pub mod serial;
-#[path = "interrupts/interrupts.rs"]
-pub mod interrupts;
 #[path = "interrupts/gdt.rs"]
 pub mod gdt;
+#[path = "interrupts/interrupts.rs"]
+pub mod interrupts;
+#[path = "serial/serial.rs"]
+pub mod serial;
+#[path = "vga/vga_buffer.rs"]
+pub mod vga_buffer;
 
 pub trait Testable {
     fn run(&self) -> ();
@@ -42,7 +42,7 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     serial_println!("[failed]\n");
     serial_println!("Error: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
-    loop {}
+    hlt_loop();
 }
 
 /// Entry point for `cargo test`
@@ -51,7 +51,7 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
 pub extern "C" fn _start() -> ! {
     init();
     test_main();
-    loop {}
+    hlt_loop();
 }
 
 #[cfg(test)]
@@ -79,4 +79,12 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
 pub fn init() {
     gdt::init();
     interrupts::init_idt();
+    unsafe { interrupts::PICS.lock().initialize() };
+    x86_64::instructions::interrupts::enable();
+}
+
+pub fn hlt_loop() -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
 }
