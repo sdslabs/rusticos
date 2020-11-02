@@ -2,13 +2,18 @@
 
 ## Contents
 - [Coding Style Guide](#coding-style-guide)
+- [Directory Structure](#directory-structure)
 - [Pre-Commit](#pre-commit)
 - [Git Commit Message Format](#git-commit-message-format)
 
 ## Coding Style Guide
 
-Gasper follows standard effective go guidelines. You can refer to [this guide](https://github.com/golang/go/wiki/CodeReviewComments)
+RusticOS follows standard effective Rust guidelines. You can refer to [this guide](https://rust-lang.github.io/api-guidelines)
 for more information.
+
+## Directory Structure
+
+To be completed later.
 
 ## Pre-Commit
 
