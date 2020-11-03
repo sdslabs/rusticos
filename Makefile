@@ -14,27 +14,27 @@ install:
 	@rustup component add llvm-tools-preview
 	
 fmt:
-	@printf "🔧' Formatting\n"
+	@printf "🔧 Formatting\n"
 	cd $(KERNELDIR)
-	@printf "👍' Done\n"
+	@printf "👍 Done\n"
 
 kernel_build:
-	@printf "🔧' Building kernel binary\n"
+	@printf "🔧 Building kernel binary\n"
 	cd $(KERNELDIR)
 	@cargo install bootimage
 	@cargo build
-	@printf "👍' Done\n"
+	@printf "👍 Done\n"
 
 kernel_test:
-	@printf "🔧' Running kernel tests\n"
+	@printf "🔧 Running kernel tests\n"
 	cd $(KERNELDIR)
 	@cargo test
-	@printf "👍' Done\n"
+	@printf "👍 Done\n"
 
 kernel_run:
-	@printf "🔧' Updating crates\n"
+	@printf "🔧 Updating crates\n"
 	cd $(KERNELDIR)
-	@printf "⛓️' Attaching runner\n"
-	@printf "🔨' Running QEMU\n"
+	@printf "⛓️ Attaching runner\n"
+	@printf "🔨 Running QEMU\n"
 	@cargo run
-	@printf "👍' Done\n"
+	@printf "👍 Done\n"
