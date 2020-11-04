@@ -12,10 +12,12 @@ install:
 	@rustup override set nightly
 	@rustup component add rust-src
 	@rustup component add llvm-tools-preview
+	@rustup component add clippy
 	
 fmt:
 	@printf "🔧 Formatting\n"
 	cd $(KERNELDIR)
+	@cargo fmt --all
 	@printf "👍 Done\n"
 
 kernel_build:
