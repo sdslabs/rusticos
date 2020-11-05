@@ -7,20 +7,17 @@
 #![feature(alloc_error_handler)]
 #![feature(const_mut_refs)]
 #![feature(const_in_array_repeat_expressions)]
+#![feature(wake_trait)]
 
 extern crate alloc;
 use core::panic::PanicInfo;
-#[path = "allocator/allocator.rs"]
 pub mod allocator;
 #[path = "interrupts/gdt.rs"]
 pub mod gdt;
-#[path = "interrupts/interrupts.rs"]
 pub mod interrupts;
-#[path = "memory/memory.rs"]
 pub mod memory;
-#[path = "serial/serial.rs"]
 pub mod serial;
-#[path = "vga/vga_buffer.rs"]
+pub mod task;
 pub mod vga_buffer;
 
 pub fn init() {
