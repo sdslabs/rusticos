@@ -1,0 +1,91 @@
+name: Kernel CI
+
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - '*'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Build
+    env:
+      working-directory: ./kernel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Install Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+      - name: Install `rust-src` Rustup Component
+        run: rustup component add rust-src
+      - name: Run `cargo build`
+        run:  make kernel_build
+
+  test:
+    name: Test
+    env:
+      working-directory: ./kernel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Install Rustup Components
+        run: rustup component add rust-src llvm-tools-preview
+      - name: Run `cargo build`
+        run: make kernel_build
+      - name: Install QEMU (Linux)
+        run: sudo apt update && sudo apt install qemu-system-x86
+      - name: "Print QEMU Version"
+        run: qemu-system-x86_64 --version
+      - name: Run `cargo test`
+        run: make kernel_test
+
+  check_formatting:
+    name: Check Formatting
+    env:
+      working-directory: ./kernel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Install Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          components: rustfmt
+          override: true
+      - name: Run `cargo fmt`
+        run: cargo fmt --all -- --check
+        working-directory: ${{env.working-directory}}
+
+  clippy:
+    name: Clippy
+    env:
+      working-directory: ./kernel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Install Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          components: clippy, rust-src
+          override: true
+      - name: Run `cargo clippy`
+        run: cargo clippy
+        working-directory: ${{env.working-directory}}
