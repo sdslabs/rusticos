@@ -11,3 +11,5 @@ Cargo.lock
 
 # Remove generated binaries
 /kernel/target/**
+**/*.bin
+**/*.o
