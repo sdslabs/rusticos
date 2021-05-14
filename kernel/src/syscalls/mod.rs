@@ -27,7 +27,6 @@ pub unsafe fn init_syscalls() {
     wrmsr", in("rcx") MSR_STAR, out("rax") _, out("rdx") _);
 }
 
-
 #[naked]
 fn handle_syscall() {
     unsafe {
