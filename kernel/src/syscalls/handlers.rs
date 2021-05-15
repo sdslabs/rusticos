@@ -2,7 +2,14 @@ use crate::println;
 use alloc::collections::btree_map::BTreeMap;
 use lazy_static::lazy_static;
 
-pub struct Syscall {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u64)]
+pub enum SyscallIndex {
+    Dummy0 = 0x595ca11a,
+    Dummy1 = 0x595ca11b,
+}
+
+struct Syscall {
     pub func: fn(u64, u64, u64, u64) -> i64,
 }
 
@@ -37,10 +44,10 @@ pub fn process_syscalls(addr: u64, arg0: u64, arg1: u64, arg2: u64, arg3: u64) -
 }
 
 lazy_static! {
-    pub static ref SYSCALLS: BTreeMap<u64, Syscall> = {
+    static ref SYSCALLS: BTreeMap<u64, Syscall> = {
         let mut syscalls = BTreeMap::new();
-        syscalls.insert(0x595ca11a, Syscall::new(dummy_syscall_0));
-        syscalls.insert(0x595ca11b, Syscall::new(dummy_syscall_1));
+        syscalls.insert(SyscallIndex::Dummy0 as u64, Syscall::new(dummy_syscall_0));
+        syscalls.insert(SyscallIndex::Dummy1 as u64, Syscall::new(dummy_syscall_1));
         syscalls
     };
 }
