@@ -38,6 +38,8 @@ lazy_static! {
         }
         idt[InterruptIndex::Timer.as_usize()].set_handler_fn(timer_interrupt_handler);
         idt[InterruptIndex::Keyboard.as_usize()].set_handler_fn(keyboard_interrupt_handler);
+        idt.general_protection_fault
+            .set_handler_fn(general_protection_fault_handler);
         idt.page_fault.set_handler_fn(page_fault_handler);
         idt
     };
@@ -64,6 +66,16 @@ extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: &mut InterruptSt
         PICS.lock()
             .notify_end_of_interrupt(InterruptIndex::Timer.as_u8());
     }
+}
+
+extern "x86-interrupt" fn general_protection_fault_handler(
+    stack_frame: &mut InterruptStackFrame,
+    error_code: u64,
+) {
+    println!(
+        "EXCEPTION: GENERAL PROTECTION FAULT! error_code: {}\n{:#?}",
+        error_code, stack_frame
+    );
 }
 
 extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: &mut InterruptStackFrame) {

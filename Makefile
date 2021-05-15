@@ -40,3 +40,8 @@ kernel_run:
 	@printf "🔨 Running QEMU\n"
 	@cargo run
 	@printf "👍 Done\n"
+
+help: Makefile
+	@printf "RusticOS, Lightweight OS implementation in Rust\n\n"
+	@printf "For now just run make kernel_build && make kernel_run\n"
+	@printf "Do check out the code at https://github.com/sdslabs/rusticos\n"
