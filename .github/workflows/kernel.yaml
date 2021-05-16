@@ -22,7 +22,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly
+          toolchain: nightly-2020-12-07
       - name: Install `rust-src` Rustup Component
         run: rustup component add rust-src
       - name: Run `cargo build`
@@ -38,7 +38,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly
+          toolchain: nightly-2020-12-07
       - name: Checkout Repository
         uses: actions/checkout@v2
       - name: Install Rustup Components
@@ -64,9 +64,29 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly
+          toolchain: nightly-2020-12-07
           components: rustfmt
           override: true
       - name: Run `cargo fmt`
         run: cargo fmt --all -- --check
         working-directory: ${{env.working-directory}}
+
+  clippy:
+    name: Clippy
+    env:
+      working-directory: ./kernel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Install Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly-2020-12-07
+          components: clippy, rust-src
+          override: true
+      - name: Run `cargo clippy`
+        run: cargo clippy
+        working-directory: ${{env.working-directory}}
+
