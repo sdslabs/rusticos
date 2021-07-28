@@ -22,6 +22,7 @@ pub mod serial;
 pub mod syscalls;
 pub mod task;
 pub mod vga_buffer;
+pub mod scheduler;
 
 pub fn init() {
     gdt::init();

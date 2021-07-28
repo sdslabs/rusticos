@@ -73,7 +73,7 @@ pub fn init() {
 }
 
 #[inline(always)]
-pub unsafe fn set_usermode_segs() -> (u16, u16) {
+pub unsafe fn set_usermode_segments() -> (u16, u16) {
     use x86_64::instructions::segmentation::load_ds;
 
     // set ds ans tss, return cs and ds
