@@ -8,18 +8,21 @@ MAKEFLAGS += --silent
 default: help
 .ONESHELL: # Only applies to all target
 
+## install: Install toolchain dependencies
 install:
-	@rustup override set nightly
+	@rustup override set nightly-2020-12-07
 	@rustup component add rust-src
 	@rustup component add llvm-tools-preview
 	@rustup component add clippy
-	
+
+## fmt: Format codebase using cargo fmt
 fmt:
 	@printf "🔧 Formatting\n"
 	cd $(KERNELDIR)
 	@cargo fmt --all
 	@printf "👍 Done\n"
 
+## kernel_build: Build kernel image
 kernel_build:
 	@printf "🔧 Building kernel binary\n"
 	cd $(KERNELDIR)
@@ -27,12 +30,14 @@ kernel_build:
 	@cargo build
 	@printf "👍 Done\n"
 
+## kernel_test: Run kernel tests
 kernel_test:
 	@printf "🔧 Running kernel tests\n"
 	cd $(KERNELDIR)
 	@cargo test
 	@printf "👍 Done\n"
 
+## kernel_run: Attach QEMU and run kernel
 kernel_run:
 	@printf "🔧 Updating crates\n"
 	cd $(KERNELDIR)
@@ -42,6 +47,6 @@ kernel_run:
 	@printf "👍 Done\n"
 
 help: Makefile
-	@printf "RusticOS, Lightweight OS implementation in Rust\n\n"
-	@printf "For now just run make kernel_build && make kernel_run\n"
-	@printf "Do check out the code at https://github.com/sdslabs/rusticos\n"
+	@printf "\nRusticOS, Lightweight OS implementation in Rust\n\n"
+	@sed -n 's/^##//p' $< | column -t -s ':' |  sed -e 's/^/ /'
+	@printf "\nDo check out the code at https://github.com/sdslabs/rusticos\n\n"
