@@ -3,9 +3,6 @@ use alloc::boxed::Box;
 use alloc::vec::Vec;
 use lazy_static::lazy_static;
 use spin::Mutex;
-use x86_64::structures::paging::OffsetPageTable;
-use x86_64::{structures::paging::PageTable, VirtAddr, PhysAddr};
-
 
 #[derive(Debug, Clone)]
 pub struct Context {
@@ -71,29 +68,39 @@ enum TaskState {
 
 struct Task {
     state: TaskState,
-    task_pt: Box<PageTable>,
-    _stack_vec: Vec<u8>,
+    fn_page_table: Box<PageTable>,
+    fn_stack_vec: Vec<u8>,
 }
 
 impl Task {
     pub fn new(
         exec_base: VirtAddr,
         stack_end: VirtAddr,
-        task_pt: Box<PageTable>,
-        _stack_vec: Vec<u8>,
+        fn_page_table: Box<PageTable>,
+        fn_stack_vec: Vec<u8>,
     ) -> Task {
         Task {
             state: TaskState::StartingInfo(exec_base, stack_end),
-            task_pt,
-            _stack_vec,
+            fn_page_table,
+            fn_stack_vec,
         }
+    }
+
+    pub fn enable_page_table(&self) {
+        let phys_addr = &self.fn_page_table;
     }
 }
 
 pub struct Scheduler {
     tasks: Mutex<Vec<Task>>,
-    current_task: Mutex<Option<usize>>
+    current_task: Mutex<Option<usize>>,
 }
+
+use x86_64::structures::paging::mapper::Translate;
+use x86_64::{
+    structures::paging::{FrameAllocator, Mapper, Page, PageTable, PhysFrame, Size4KiB},
+    PhysAddr, VirtAddr,
+};
 
 impl Scheduler {
     pub fn new() -> Scheduler {
@@ -103,42 +110,55 @@ impl Scheduler {
         }
     }
 
-    pub unsafe fn schedule(&self, mapper: &mut OffsetPageTable, fn_addr: VirtAddr) {
+    pub unsafe fn schedule(
+        &self,
+        mapper: &mut (impl Mapper<Size4KiB> + Translate),
+        fn_addr: VirtAddr,
+        frame_allocator: &mut impl FrameAllocator<Size4KiB>,
+    ) {
         use x86_64::structures::paging::PageTableFlags as Flags;
-        use x86_64::structures::paging::mapper::Translate;
 
         let userspace_fn_phys = Translate::translate_addr(mapper, fn_addr).unwrap(); // virtual address to physical
-        let page_phys_start = (userspace_fn_phys.addr() >> 12) << 12; // zero out page offset to get which page we should map
-        let fn_page_offset = userspace_fn_phys.addr() - page_phys_start; // offset of function from page start
+        let page_phys_start = (userspace_fn_phys.as_u64() >> 12); // zero out page offset to get which page we should map
+        let fn_page_offset = userspace_fn_phys.as_u64() - page_phys_start; // offset of function from page start
         let userspace_fn_virt_base = 0x400000; // target virtual address of page
         let userspace_fn_virt = userspace_fn_virt_base + fn_page_offset; // target virtual address of function
-        let mut task_pt = mem::PageTable::new(); // copy over the kernel's page tables
-        task_pt.map_virt_to_phys(
-            VirtAddr::new(userspace_fn_virt_base),
-            PhysAddr::new(page_phys_start),
-            Flags::PRESENT | Flags::USER_ACCESSIBLE,
-        ); // map the program's code
-        task_pt.map_virt_to_phys(
-            VirtAddr::new(userspace_fn_virt_base).offset(0x1000),
-            PhysAddr::new(page_phys_start).offset(0x1000),
-            Flags::PRESENT | Flags::USER_ACCESSIBLE,
-        ); // also map another page to be sure we got the entire function in
-        let mut stack_space: Vec<u8> = Vec::with_capacity(0x1000); // allocate some memory to use for the stack
-        let stack_space_phys = VirtAddr::new(stack_space.as_mut_ptr() as *const u8 as u64)
-            .to_phys()
+        let fn_page_table = Box::new(PageTable::new());
+        mapper
+            .map_to(
+                Page::from_start_address(VirtAddr::new(userspace_fn_virt_base)).unwrap(),
+                PhysFrame::containing_address(PhysAddr::new(page_phys_start)),
+                Flags::PRESENT | Flags::USER_ACCESSIBLE,
+                frame_allocator,
+            )
             .unwrap()
-            .0;
-        // take physical address of stack
-        task_pt.map_virt_to_phys(
-            mem::VirtAddr::new(0x800000),
-            stack_space_phys,
-            Flags::PRESENT | Flags::WRITABLE | Flags::USER_ACCESSIBLE,
-        ); // map the stack memory to 0x800000
+            .flush(); // map the program's code
+        mapper
+            .map_to(
+                Page::containing_address(VirtAddr::new(userspace_fn_virt_base + 0x1000)),
+                PhysFrame::containing_address(PhysAddr::new(page_phys_start + 0x1000)),
+                Flags::PRESENT | Flags::USER_ACCESSIBLE,
+                frame_allocator,
+            )
+            .unwrap()
+            .flush(); // also map another page to be sure we got the entire function in
+        let mut fn_stack_vec: Vec<u8> = Vec::with_capacity(0x1000); // allocate some memory to use for the stack
+        let fn_stack_virt = VirtAddr::new(fn_stack_vec.as_mut_ptr() as *const u8 as u64);
+        let fn_stack_phys = Translate::translate_addr(mapper, fn_stack_virt).unwrap(); // take physical address of stack
+        mapper
+            .map_to(
+                Page::from_start_address(VirtAddr::new(0x800000)).unwrap(),
+                frame_allocator.allocate_frame().unwrap(),
+                Flags::PRESENT | Flags::WRITABLE | Flags::USER_ACCESSIBLE,
+                frame_allocator,
+            )
+            .unwrap()
+            .flush(); // map the stack memory to 0x800000
         let task = Task::new(
             VirtAddr::new(userspace_fn_virt),
             VirtAddr::new(0x801000),
-            stack_space,
-            task_pt,
+            fn_page_table,
+            fn_stack_vec,
         ); // create task struct
         self.tasks.lock().push(task); // push task struct to list of tasks
     }
@@ -159,21 +179,19 @@ impl Scheduler {
                 let next_task = (*cur_task + 1) % tasks_len;
                 *cur_task = next_task;
                 let task = &self.tasks.lock()[next_task];
-                task.task_pt.enable()
+                // task.enable_page_table();
                 task.state.clone()
             };
             match task_state {
-                TaskState::SavedContext(ctx) => {
-                    restore_context(&ctx)
-                },
+                TaskState::SavedContext(ctx) => restore_context(&ctx),
                 TaskState::StartingInfo(exec_base, stack_end) => {
                     switch_to_usermode(exec_base, stack_end)
-                },
+                }
             }
         }
     }
 }
 
 lazy_static! {
-    pub static ref SCHEDULER: Scheduler = Scheduler::new()
+    pub static ref SCHEDULER: Scheduler = { Scheduler::new() };
 }
