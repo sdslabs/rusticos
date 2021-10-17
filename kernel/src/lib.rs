@@ -18,9 +18,12 @@ pub mod allocator;
 pub mod gdt;
 pub mod interrupts;
 pub mod memory;
+pub mod scheduler;
 pub mod serial;
 pub mod syscalls;
 pub mod task;
+#[path = "scheduler/userspace.rs"]
+pub mod userspace;
 pub mod vga_buffer;
 
 pub fn init() {

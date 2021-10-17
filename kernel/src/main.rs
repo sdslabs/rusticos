@@ -9,7 +9,6 @@ extern crate alloc;
 use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
 use kernel::println;
-use kernel::task::{executor::Executor, keyboard, Task};
 
 // panic handler
 #[cfg(not(test))]
@@ -30,10 +29,11 @@ fn panic(_info: &PanicInfo) -> ! {
 entry_point!(kernel_main);
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
     use kernel::memory::BootInfoFrameAllocator;
-    use kernel::{allocator, memory, syscalls};
+    use kernel::task::{executor::Executor, keyboard, Task};
+    use kernel::{allocator, memory, scheduler, syscalls, userspace};
     use x86_64::VirtAddr;
 
-    println!("Hello World{}", "!");
+    println!("Welcome to RusticOS{}", "!");
     kernel::init();
 
     let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
@@ -48,7 +48,25 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     #[cfg(test)]
     test_main();
 
-    let mut executor = Executor::new();
-    executor.spawn(Task::new(keyboard::print_keypresses()));
-    executor.run();
+    unsafe {
+        let scheduler = &scheduler::SCHEDULER;
+        scheduler.schedule(
+            &mut mapper,
+            VirtAddr::new(userspace::userspace_prog_1 as *const () as u64),
+            &mut frame_allocator,
+        );
+        scheduler.schedule(
+            &mut mapper,
+            VirtAddr::new(userspace::userspace_prog_2 as *const () as u64),
+            &mut frame_allocator,
+        );
+
+        loop {
+            scheduler.run_next();
+        }
+    }
+
+    // let mut executor = Executor::new();
+    // executor.spawn(Task::new(keyboard::print_keypresses()));
+    // executor.run();
 }

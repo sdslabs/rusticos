@@ -1,4 +1,4 @@
-use crate::{gdt, print, println};
+use crate::{gdt, print, println, scheduler};
 use lazy_static::lazy_static;
 use pic8259_simple::ChainedPics;
 use spin;
@@ -57,14 +57,20 @@ extern "x86-interrupt" fn double_fault_handler(
     stack_frame: &mut InterruptStackFrame,
     _error_code: u64,
 ) -> ! {
-    panic!("EXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
+    panic!("EXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame,);
 }
 
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: &mut InterruptStackFrame) {
     print!(".");
+
     unsafe {
+        let ctx = scheduler::get_context();
+        scheduler::SCHEDULER.save_current_context(ctx);
+
         PICS.lock()
             .notify_end_of_interrupt(InterruptIndex::Timer.as_u8());
+
+        scheduler::SCHEDULER.run_next();
     }
 }
 
