@@ -30,7 +30,7 @@ fn panic(_info: &PanicInfo) -> ! {
 entry_point!(kernel_main);
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
     use kernel::memory::BootInfoFrameAllocator;
-    use kernel::{allocator, memory, syscalls};
+    use kernel::{allocator, memory};
     use x86_64::VirtAddr;
 
     println!("Hello World{}", "!");
@@ -41,9 +41,9 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
 
     allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialization failed");
-    unsafe {
-        syscalls::init_syscalls();
-    }
+    // unsafe {
+    //     syscalls::init_syscalls();
+    // }
 
     #[cfg(test)]
     test_main();
