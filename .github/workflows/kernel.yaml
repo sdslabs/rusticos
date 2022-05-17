@@ -22,7 +22,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly-2020-12-07
+          toolchain: nightly-2021-12-07
       - name: Install `rust-src` Rustup Component
         run: rustup component add rust-src
       - name: Run `cargo build`
@@ -38,7 +38,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly-2020-12-07
+          toolchain: nightly-2021-12-07
       - name: Checkout Repository
         uses: actions/checkout@v2
       - name: Install Rustup Components
@@ -64,7 +64,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly-2020-12-07
+          toolchain: nightly-2021-12-07
           components: rustfmt
           override: true
       - name: Run `cargo fmt`
@@ -83,7 +83,7 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly-2020-12-07
+          toolchain: nightly-2021-12-07
           components: clippy, rust-src
           override: true
       - name: Run `cargo clippy`
