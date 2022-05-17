@@ -10,7 +10,7 @@ default: help
 
 ## install: Install toolchain dependencies
 install:
-	@rustup override set nightly-2020-12-07
+	@rustup override set nightly-2021-12-07
 	@rustup component add rust-src
 	@rustup component add llvm-tools-preview
 	@rustup component add clippy

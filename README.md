@@ -45,7 +45,7 @@ Open your favourite terminal and perform the following tasks:-
     Do check out the code at https://github.com/sdslabs/rusticos
     ```
 
-1. Run `make install` to install the necessary toolchain dependencies and change Rust version to nightly-2020-12-07.
+1. Run `make install` to install the necessary toolchain dependencies and change Rust version to nightly-2021-12-07.
 
     > This is necessary to enable some of the dependency crates
 
