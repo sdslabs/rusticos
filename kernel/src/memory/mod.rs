@@ -22,6 +22,7 @@ use x86_64::{
     PhysAddr,
 };
 
+/* This code must not be used because we will use our own FrameAllocator 
 /// Creates an example mapping for the given page to frame `0xb8000`.
 pub fn create_example_mapping(
     page: Page,
@@ -40,6 +41,30 @@ pub fn create_example_mapping(
     map_to_result.expect("map_to failed").flush();
 }
 
+// WIP hashkat
+pub fn create_user_process1_mapping(
+    page: Page,
+    mapper: &mut OffsetPageTable,
+    frame_allocator: &mut impl FrameAllocator<Size4KiB>,
+) {
+    use x86_64::structures::paging::PageTableFlags as Flags;
+
+    //Change frame address to a random address here... Not sure but I think it must be handled by the frame allocator? CC: Nautilus --> 
+    // Taking 0x400000 as virt address
+    // Taking 0x800000 as physical address
+    // Copy Kernel's PT entries into a new one ---> Help needed here CC Ayan
+    let frame = PhysFrame::containing_address(PhysAddr::new(0xb8000));
+    let flags = Flags::PRESENT | Flags::WRITABLE | Flags::USER_ACCESSIBLE;
+
+    let map_to_result = unsafe {
+        // FIXME: this is not safe, we do it only for testing
+        mapper.map_to(page, frame, flags, frame_allocator)
+    };
+    map_to_result.expect("map_to failed").flush();
+}
+
+*/
+
 use bootloader::bootinfo::{MemoryMap, MemoryRegionType};
 
 pub struct BootInfoFrameAllocator {
@@ -57,7 +82,7 @@ impl BootInfoFrameAllocator {
 
     fn usable_frames(&self) -> impl Iterator<Item = PhysFrame> {
         let regions = self.memory_map.iter();
-        let usable_regions = regions.filter(|r| r.region_type == MemoryRegionType::Usable);
+        let usable_regions = regions.filter(|r| r.region_type == MemoryRegionType::Usable); //Syntax doubt... argument inside regions.filter()
         let addr_ranges = usable_regions.map(|r| r.range.start_addr()..r.range.end_addr());
         let frame_addresses = addr_ranges.flat_map(|r| r.step_by(4096));
         frame_addresses.map(|addr| PhysFrame::containing_address(PhysAddr::new(addr)))
