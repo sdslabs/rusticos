@@ -9,11 +9,18 @@ pub mod userspace;
 //     2) Setting the cs and ds registers to proper indexes in the GDT to indicate that we are currently in Ring3 or usermode
 //     3) Setting the registers for sysretq and iretq operations
 
-pub unsafe fn userspace_prog_1(){
+pub unsafe fn userspace_prog_1() {
     asm!("\
-        nop
-        nop
-        nop
-    "::::"intel");
+        start:
+        mov rax, 0xCA11
+        mov rdi, 10
+        mov rsi, 20
+        mov rdx, 30
+        mov r10, 40
+        syscall
+        jmp start
+    ":::: "volatile", "intel");
 }
 
+//The syscall should automatically invoke handlers::process_syscall with the following registers set as rax - syscall address, and rdi rsi rdx r10 are just 4 registers for 4 arguments passed to the syscall. 
+//You can increase this by increasing the number of arguments the syscall can handle and setting the respective registers with the appropriate values in the userspace program. :)
