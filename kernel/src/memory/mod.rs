@@ -40,7 +40,7 @@ pub fn create_example_mapping(
     map_to_result.expect("map_to failed").flush();
 }
 
-use bootloader::bootinfo::{MemoryMap, MemoryRegionType,BootInfo};
+use bootloader::bootinfo::{BootInfo, MemoryMap, MemoryRegionType};
 
 pub struct BootInfoFrameAllocator {
     memory_map: &'static MemoryMap,
@@ -72,17 +72,16 @@ unsafe impl FrameAllocator<Size4KiB> for BootInfoFrameAllocator {
     }
 }
 
-pub struct MapperFrameAllocaterInfo<'a>{
+pub struct MapperFrameAllocaterInfo<'a> {
     pub mapper: OffsetPageTable<'a>,
-    pub frame_allocator: BootInfoFrameAllocator
+    pub frame_allocator: BootInfoFrameAllocator,
 }
 
-impl MapperFrameAllocaterInfo<'_>{
+impl MapperFrameAllocaterInfo<'_> {
     pub unsafe fn init(boot_info: &'static BootInfo) -> Self {
         MapperFrameAllocaterInfo {
             mapper: unsafe { init(VirtAddr::new(boot_info.physical_memory_offset)) },
-            frame_allocator: unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) }
+            frame_allocator: unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) },
         }
     }
-    
 }

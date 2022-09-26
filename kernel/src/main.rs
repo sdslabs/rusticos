@@ -29,14 +29,18 @@ fn panic(_info: &PanicInfo) -> ! {
 // entry point for kernel
 entry_point!(kernel_main);
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
-    use kernel::memory::{MapperFrameAllocaterInfo};
-    use kernel::{allocator};
+    use kernel::allocator;
+    use kernel::memory::MapperFrameAllocaterInfo;
 
     println!("Hello World{}", "!");
     kernel::init();
 
-    let mut mapper_frame_allocator = unsafe{ MapperFrameAllocaterInfo::init(boot_info) };
-    allocator::init_heap(&mut mapper_frame_allocator.mapper, &mut mapper_frame_allocator.frame_allocator).expect("heap initialization failed");
+    let mut mapper_frame_allocator = unsafe { MapperFrameAllocaterInfo::init(boot_info) };
+    allocator::init_heap(
+        &mut mapper_frame_allocator.mapper,
+        &mut mapper_frame_allocator.frame_allocator,
+    )
+    .expect("heap initialization failed");
     // unsafe {
     //     syscalls::init_syscalls();
     // }
