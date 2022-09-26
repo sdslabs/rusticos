@@ -29,18 +29,20 @@ fn panic(_info: &PanicInfo) -> ! {
 // entry point for kernel
 entry_point!(kernel_main);
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
-    use kernel::memory::BootInfoFrameAllocator;
-    use kernel::{allocator, memory};
-    use x86_64::VirtAddr;
+    use kernel::memory::{MapperFrameAllocaterInfo};
+    use kernel::{allocator};
 
     println!("Hello World{}", "!");
     kernel::init();
 
-    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
-    let mut mapper = unsafe { memory::init(phys_mem_offset) };
-    let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
 
-    allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialization failed");
+    // let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    // let mut mapper = unsafe { memory::init(phys_mem_offset) };
+    // let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
+    
+
+    let mut mapper_frame_allocator = unsafe{ MapperFrameAllocaterInfo::init(boot_info) };
+    allocator::init_heap(&mut mapper_frame_allocator.mapper, &mut mapper_frame_allocator.frame_allocator).expect("heap initialization failed");
     // unsafe {
     //     syscalls::init_syscalls();
     // }
