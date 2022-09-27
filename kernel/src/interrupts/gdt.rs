@@ -65,11 +65,6 @@ pub fn init() {
     GDT.0.load();
     let _stack = unsafe { &STACK as *const _ };
     let _user_stack = unsafe { &PRIV_TSS_STACK as *const _ };
-    // Printing loading of GDT table
-    println!(
-        " - Loaded GDT: {:p} TSS: {:p} Stack {:p} User stack: {:p} CS segment: {} TSS segment: {}",
-        &GDT.0 as *const _, &*TSS as *const _, _stack, _user_stack, GDT.1[0].0, GDT.1[1].0
-    );
     unsafe {
         set_cs(GDT.1.code_selector);
         load_ds(GDT.1.data_selector);
