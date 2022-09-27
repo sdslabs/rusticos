@@ -22,7 +22,7 @@ use x86_64::{
     PhysAddr,
 };
 
-/* This code must not be used because we will use our own FrameAllocator 
+/* This code must not be used because we will use our own FrameAllocator
 /// Creates an example mapping for the given page to frame `0xb8000`.
 pub fn create_example_mapping(
     page: Page,
@@ -49,7 +49,7 @@ pub fn create_user_process1_mapping(
 ) {
     use x86_64::structures::paging::PageTableFlags as Flags;
 
-    //Change frame address to a random address here... Not sure but I think it must be handled by the frame allocator? CC: Nautilus --> 
+    //Change frame address to a random address here... Not sure but I think it must be handled by the frame allocator? CC: Nautilus -->
     // Taking 0x400000 as virt address
     // Taking 0x800000 as physical address
     // Copy Kernel's PT entries into a new one ---> Help needed here CC Ayan
